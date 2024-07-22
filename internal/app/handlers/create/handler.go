@@ -35,13 +35,14 @@ func (h *Handler) createShortURL(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	shortURL := fmt.Sprintf("http://%s/%s", req.Host, uuid.New())
+	UUID := uuid.New().String()
+	shortURL := fmt.Sprintf("http://%s/%s", req.Host, UUID)
 
 	url := string(body)
 	url = strings.TrimSpace(url)
 
-	h.cache[shortURL] = url
-	
+	h.cache[UUID] = url
+
 	res.Header().Set("Content-Type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
 
@@ -50,15 +51,16 @@ func (h *Handler) createShortURL(res http.ResponseWriter, req *http.Request) {
 
 func (h *Handler) getSourceURL(res http.ResponseWriter, req *http.Request) {
 	if u := req.URL; u != nil {
-		if cached, ok := h.cache[u.String()]; ok {
-			fmt.Println(cached)
+		params := strings.Split(u.Path, "/")
+		for _, param := range params {
+			if cached, ok := h.cache[param]; ok {
+				res.Header().Set("Content-Type", "text/plain")
+				res.Header().Set("Content-Length", strconv.Itoa(len(cached)))
+				res.Header().Set("Location", cached)
 
-			res.Header().Set("Content-Type", "text/plain")
-			res.Header().Set("Content-Length", strconv.Itoa(len(cached)))
-			res.Header().Set("Location", cached)
-
-			res.WriteHeader(http.StatusTemporaryRedirect)
-			return
+				res.WriteHeader(http.StatusTemporaryRedirect)
+				return
+			}
 		}
 	}
 

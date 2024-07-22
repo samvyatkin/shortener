@@ -19,8 +19,6 @@ func New() *Handler {
 }
 
 func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
-	fmt.Println(req.Method)
-
 	switch req.Method {
 	case http.MethodGet:
 		h.getSourceURL(res, req)
@@ -36,30 +34,18 @@ func (h *Handler) createShortURL(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(body)
-
 	url := string(body)
 	url = strings.TrimSpace(url)
 
 	h.cache[url] = url
-
-	fmt.Println(h.cache)
 
 	res.Header().Set("Content-Type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
 }
 
 func (h *Handler) getSourceURL(res http.ResponseWriter, req *http.Request) {
-	if err := req.ParseForm(); err != nil {
-		fmt.Println("Parse Body Parameters")
-		res.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	params := strings.Split(req.URL.Path, "/")
-	fmt.Println(params)
-	if ID := findID(params); ID != nil {
-		if cached, ok := h.cache[*ID]; ok {
+	if u := req.URL; u != nil {
+		if cached, ok := h.cache[u.String()]; ok {
 			fmt.Println(cached)
 
 			res.Header().Set("Content-Type", "text/plain")
@@ -72,14 +58,4 @@ func (h *Handler) getSourceURL(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.WriteHeader(http.StatusBadRequest)
-}
-
-func findID(params []string) *string {
-	for _, param := range params {
-		if param != "" {
-			return &param
-		}
-	}
-
-	return nil
 }

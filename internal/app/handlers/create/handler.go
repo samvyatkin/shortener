@@ -1,6 +1,7 @@
 package create
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -59,6 +60,8 @@ func (h *Handler) getSourceURL(res http.ResponseWriter, req *http.Request) {
 }
 
 func findID(params []string) *string {
+	fmt.Println(params)
+
 	for _, param := range params {
 		if param != "" {
 			return &param

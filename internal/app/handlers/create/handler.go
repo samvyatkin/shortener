@@ -1,4 +1,4 @@
-package shortener_create_post
+package create
 
 import (
 	"net/http"

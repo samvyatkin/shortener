@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	createRoute "shortener/internal/app/handlers/shortener_create_post"
+	createRoute "shortener/internal/app/handlers/create"
 )
 
 func main() {

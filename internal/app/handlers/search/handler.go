@@ -1,4 +1,4 @@
-package shortener_get
+package search
 
 import "net/http"
 

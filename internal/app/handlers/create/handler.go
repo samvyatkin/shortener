@@ -2,6 +2,7 @@ package create
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 	"strconv"
@@ -34,13 +35,17 @@ func (h *Handler) createShortURL(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	shortURL := fmt.Sprintf("http://%s/%s", req.Host, uuid.New())
+
 	url := string(body)
 	url = strings.TrimSpace(url)
 
-	h.cache[url] = url
-
+	h.cache[shortURL] = url
+	
 	res.Header().Set("Content-Type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
+
+	res.Write([]byte(shortURL))
 }
 
 func (h *Handler) getSourceURL(res http.ResponseWriter, req *http.Request) {

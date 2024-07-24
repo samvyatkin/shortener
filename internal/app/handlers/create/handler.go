@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
-	"strconv"
 	"strings"
 )
 
@@ -26,15 +25,7 @@ func New(
 }
 
 func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case http.MethodGet:
-		h.getSourceURL(res, req)
-	case http.MethodPost:
-		h.createShortURL(res, req)
-	}
-}
-
-func (h *Handler) createShortURL(res http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
@@ -53,23 +44,4 @@ func (h *Handler) createShortURL(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusCreated)
 
 	res.Write([]byte(shortURL))
-}
-
-func (h *Handler) getSourceURL(res http.ResponseWriter, req *http.Request) {
-	if u := req.URL; u != nil {
-		params := strings.Split(u.Path, "/")
-		for _, param := range params {
-			url, err := h.storage.Get(param)
-			if err == nil {
-				res.Header().Set("Content-Type", "text/plain")
-				res.Header().Set("Content-Length", strconv.Itoa(len(url)))
-				res.Header().Set("Location", url)
-
-				res.WriteHeader(http.StatusTemporaryRedirect)
-				return
-			}
-		}
-	}
-
-	res.WriteHeader(http.StatusBadRequest)
 }

@@ -51,24 +51,6 @@ func TestHandle(t *testing.T) {
 				},
 			},
 		},
-		{
-			name:          "Get shorten URL (Success)",
-			method:        http.MethodGet,
-			request:       fmt.Sprintf("%s/%s", host, UUID),
-			uuidGenerator: mocks.NewUUIDGeneratorMock(UUID),
-			storage: mocks.NewInMemoryStorageMock(
-				map[string]string{
-					UUID: URL,
-				},
-			),
-			want: want{
-				code: http.StatusTemporaryRedirect,
-				headers: map[string]string{
-					"Content-Type": "text/plain",
-					"Location":     URL,
-				},
-			},
-		},
 	}
 
 	for _, tt := range tests {

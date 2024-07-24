@@ -2,20 +2,26 @@ package create
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"net/http"
+	"shortener/internal/app/storage"
+	"shortener/internal/app/utils"
 	"strconv"
 	"strings"
 )
 
 type Handler struct {
-	cache map[string]string
+	uuidGenerator utils.IdentifierGenerator
+	storage       storage.Storage
 }
 
-func New() *Handler {
+func New(
+	uuidGenerator utils.IdentifierGenerator,
+	storage storage.Storage,
+) *Handler {
 	return &Handler{
-		cache: make(map[string]string),
+		uuidGenerator: uuidGenerator,
+		storage:       storage,
 	}
 }
 
@@ -35,13 +41,13 @@ func (h *Handler) createShortURL(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	UUID := uuid.New().String()
+	UUID := h.uuidGenerator.Generate()
 	shortURL := fmt.Sprintf("http://%s/%s", req.Host, UUID)
 
 	url := string(body)
 	url = strings.TrimSpace(url)
 
-	h.cache[UUID] = url
+	h.storage.Set(UUID, url)
 
 	res.Header().Set("Content-Type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
@@ -53,10 +59,11 @@ func (h *Handler) getSourceURL(res http.ResponseWriter, req *http.Request) {
 	if u := req.URL; u != nil {
 		params := strings.Split(u.Path, "/")
 		for _, param := range params {
-			if cached, ok := h.cache[param]; ok {
+			url, err := h.storage.Get(param)
+			if err == nil {
 				res.Header().Set("Content-Type", "text/plain")
-				res.Header().Set("Content-Length", strconv.Itoa(len(cached)))
-				res.Header().Set("Location", cached)
+				res.Header().Set("Content-Length", strconv.Itoa(len(url)))
+				res.Header().Set("Location", url)
 
 				res.WriteHeader(http.StatusTemporaryRedirect)
 				return

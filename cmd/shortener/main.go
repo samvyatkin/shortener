@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	createRoute "shortener/internal/app/handlers/create"
+	"shortener/internal/app/storage"
+	"shortener/internal/app/utils"
 )
 
 func main() {
@@ -12,7 +14,10 @@ func main() {
 }
 
 func run() error {
-	createHandler := createRoute.New()
+	createHandler := createRoute.New(
+		&utils.UUIDGenerator{},
+		storage.NewInMemoryStorage(),
+	)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", createHandler.Handle)

@@ -26,14 +26,15 @@ type Config struct {
 	shortenerAddr string
 }
 
-var flags struct {
-	serverAddr    *string
-	shortenerAddr *string
+type flags struct {
+	serverAddr    string
+	shortenerAddr string
 }
 
 func NewConfig() *Config {
-	flag.StringVar(flags.serverAddr, "a", defaultPort, "server address")
-	flag.StringVar(flags.shortenerAddr, "b", fmt.Sprintf("%s%s", defaultURL, defaultPort), "shortener address")
+	f := new(flags)
+	flag.StringVar(&f.serverAddr, "a", defaultPort, "server address")
+	flag.StringVar(&f.shortenerAddr, "b", fmt.Sprintf("%s%s", defaultURL, defaultPort), "shortener address")
 	flag.Parse()
 
 	serverAddr := ""
@@ -47,12 +48,12 @@ func NewConfig() *Config {
 		shortenerAddr = addr
 	}
 
-	if flags.serverAddr != nil && serverAddr == "" {
-		serverAddr = *flags.serverAddr
+	if serverAddr == "" {
+		serverAddr = f.serverAddr
 	}
 
-	if flags.shortenerAddr != nil && shortenerAddr == "" {
-		shortenerAddr = *flags.shortenerAddr
+	if shortenerAddr == "" {
+		shortenerAddr = f.shortenerAddr
 	}
 
 	c := &Config{

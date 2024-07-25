@@ -38,7 +38,7 @@ func NewFlagConfig() *FlagConfig {
 	}
 
 	if shortenerAddr == "" {
-		flag.StringVar(&shortenerAddr, "b", fmt.Sprintf("%s%s", defaultURL, defaultURL), "shortener address")
+		flag.StringVar(&shortenerAddr, "b", fmt.Sprintf("%s%s", defaultURL, defaultPort), "shortener address")
 	}
 
 	c := &FlagConfig{

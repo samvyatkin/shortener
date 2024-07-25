@@ -4,6 +4,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
+	config "shortener/internal/app/config"
 	createRoute "shortener/internal/app/handlers/create"
 	"shortener/internal/app/handlers/search"
 	"shortener/internal/app/storage"
@@ -18,6 +19,8 @@ func main() {
 }
 
 func run() error {
+	// Configuration
+	c := config.New()
 	r := chi.NewRouter()
 
 	// Middleware
@@ -34,6 +37,7 @@ func run() error {
 	createHandler := createRoute.New(
 		&utils.UUIDGenerator{},
 		inMemoryStorage,
+		*c,
 	)
 	searchHandler := search.New(inMemoryStorage)
 
@@ -42,6 +46,10 @@ func run() error {
 		r.Post("/", createHandler.Handle)
 		r.Get("/{id}", searchHandler.Handle)
 	})
+
+	if addr := c.ServerAddr; addr != nil {
+		return http.ListenAndServe(*addr, r)
+	}
 
 	return http.ListenAndServe(`:8080`, r)
 }

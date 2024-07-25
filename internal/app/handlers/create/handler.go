@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"shortener/internal/app/config"
 	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
 	"strings"
@@ -12,15 +13,18 @@ import (
 type Handler struct {
 	uuidGenerator utils.IdentifierGenerator
 	storage       storage.Storage
+	config        config.Configuration
 }
 
 func New(
 	uuidGenerator utils.IdentifierGenerator,
 	storage storage.Storage,
+	config config.Configuration,
 ) *Handler {
 	return &Handler{
 		uuidGenerator: uuidGenerator,
 		storage:       storage,
+		config:        config,
 	}
 }
 
@@ -32,8 +36,13 @@ func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	resAddr := fmt.Sprintf("http://%s", req.Host)
+	if addr := h.config.ShortenerAddr; addr != nil {
+		resAddr = *addr
+	}
+
 	UUID := h.uuidGenerator.Generate()
-	shortURL := fmt.Sprintf("http://%s/%s", req.Host, UUID)
+	shortURL := fmt.Sprintf("%s/%s", resAddr, UUID)
 
 	url := string(body)
 	url = strings.TrimSpace(url)

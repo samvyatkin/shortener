@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"shortener/internal/app/config"
 	"shortener/internal/app/handlers/create/mocks"
 	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
@@ -15,12 +16,14 @@ import (
 )
 
 const (
-	host = "http://example.com"
+	host = "http://localhost"
 	URL  = "https://practicum.yandex.ru"
 	UUID = "0190e4f6-ea36-71f6-a9c1-46010747f9aa"
 )
 
 func TestHandle(t *testing.T) {
+	addr := fmt.Sprintf("%s:8080", host)
+
 	type want struct {
 		code     int
 		response string
@@ -34,6 +37,7 @@ func TestHandle(t *testing.T) {
 		body          string
 		uuidGenerator utils.IdentifierGenerator
 		storage       storage.Storage
+		config        config.Configuration
 		want          want
 	}{
 		{
@@ -43,9 +47,10 @@ func TestHandle(t *testing.T) {
 			body:          URL,
 			uuidGenerator: mocks.NewUUIDGeneratorMock(UUID),
 			storage:       mocks.NewInMemoryStorageMock(map[string]string{}),
+			config:        mocks.NewConfigMock(addr, addr),
 			want: want{
 				code:     http.StatusCreated,
-				response: fmt.Sprintf("%s/%s", host, UUID),
+				response: fmt.Sprintf("%s:8080/%s", host, UUID),
 				headers: map[string]string{
 					"Content-Type": "text/plain",
 				},
@@ -60,7 +65,7 @@ func TestHandle(t *testing.T) {
 			req := httptest.NewRequest(tt.method, tt.request, body)
 			rec := httptest.NewRecorder()
 
-			h := New(tt.uuidGenerator, tt.storage)
+			h := New(tt.uuidGenerator, tt.storage, tt.config)
 			h.Handle(rec, req)
 
 			res := rec.Result()

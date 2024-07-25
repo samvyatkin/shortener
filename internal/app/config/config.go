@@ -2,17 +2,30 @@ package config
 
 import "flag"
 
-type Configuration struct {
-	ServerAddr    *string
-	ShortenerAddr *string
+type Configuration interface {
+	ServerAddr() string
+	ShortenerAddr() string
 }
 
-func New() *Configuration {
-	c := &Configuration{
-		ServerAddr:    flag.String("a", ":8080", "server address"),
-		ShortenerAddr: flag.String("b", "localhost:8080", "shortener address"),
+type AddrConfig struct {
+	serverAddr    *string
+	shortenerAddr *string
+}
+
+func NewAddrConfig() *AddrConfig {
+	c := &AddrConfig{
+		serverAddr:    flag.String("a", ":8080", "server address"),
+		shortenerAddr: flag.String("b", "localhost:8080", "shortener address"),
 	}
 
 	flag.Parse()
 	return c
+}
+
+func (c *AddrConfig) ServerAddr() string {
+	return *c.serverAddr
+}
+
+func (c *AddrConfig) ShortenerAddr() string {
+	return *c.shortenerAddr
 }

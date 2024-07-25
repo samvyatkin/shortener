@@ -36,13 +36,8 @@ func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	resAddr := fmt.Sprintf("http://%s", req.Host)
-	if addr := h.config.ShortenerAddr; addr != nil {
-		resAddr = *addr
-	}
-
 	UUID := h.uuidGenerator.Generate()
-	shortURL := fmt.Sprintf("%s/%s", resAddr, UUID)
+	shortURL := fmt.Sprintf("%s/%s", h.config.ShortenerAddr(), UUID)
 
 	url := string(body)
 	url = strings.TrimSpace(url)

@@ -15,7 +15,7 @@ type AddrConfig struct {
 func NewAddrConfig() *AddrConfig {
 	c := &AddrConfig{
 		serverAddr:    flag.String("a", ":8080", "server address"),
-		shortenerAddr: flag.String("b", "localhost:8080", "shortener address"),
+		shortenerAddr: flag.String("b", "http://localhost:8080", "shortener address"),
 	}
 
 	flag.Parse()

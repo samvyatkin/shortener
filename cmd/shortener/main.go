@@ -20,7 +20,7 @@ func main() {
 
 func run() error {
 	// Configuration
-	c := config.NewAddrConfig()
+	flags := config.NewFlagConfig()
 	r := chi.NewRouter()
 
 	// Middleware
@@ -37,7 +37,7 @@ func run() error {
 	createHandler := createRoute.New(
 		&utils.UUIDGenerator{},
 		inMemoryStorage,
-		c,
+		flags,
 	)
 	searchHandler := search.New(inMemoryStorage)
 
@@ -47,5 +47,5 @@ func run() error {
 		r.Get("/{id}", searchHandler.Handle)
 	})
 
-	return http.ListenAndServe(c.ServerAddr(), r)
+	return http.ListenAndServe(flags.ServerAddr(), r)
 }

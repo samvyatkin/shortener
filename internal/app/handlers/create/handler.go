@@ -29,12 +29,13 @@ func New(
 }
 
 func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	defer req.Body.Close()
 
 	UUID := h.uuidGenerator.Generate()
 	shortURL := fmt.Sprintf("%s/%s", h.config.ShortenerAddr(), UUID)

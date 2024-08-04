@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"log"
 	"net/http"
 	"shortener/internal/app/config"
 	createRoute "shortener/internal/app/handlers/create"
@@ -13,12 +14,10 @@ import (
 )
 
 func main() {
-	if err := run(); err != nil {
-		panic(err)
-	}
+	run()
 }
 
-func run() error {
+func run() {
 	// Configuration
 	c := config.NewConfig()
 	r := chi.NewRouter()
@@ -47,5 +46,5 @@ func run() error {
 		r.Get("/{id}", searchHandler.Handle)
 	})
 
-	return http.ListenAndServe(c.ServerAddr(), r)
+	log.Fatal(http.ListenAndServe(c.ServerAddr(), r))
 }

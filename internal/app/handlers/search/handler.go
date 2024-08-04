@@ -18,20 +18,34 @@ func New(storage storage.Storage) *Handler {
 }
 
 func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
-	if u := req.URL; u != nil {
-		params := strings.Split(u.Path, "/")
-		for _, param := range params {
-			url, err := h.storage.Get(param)
-			if err == nil {
-				res.Header().Set("Content-Type", "text/plain")
-				res.Header().Set("Content-Length", strconv.Itoa(len(url)))
-				res.Header().Set("Location", url)
-
-				res.WriteHeader(http.StatusTemporaryRedirect)
-				return
-			}
-		}
+	u := req.URL
+	if u == nil {
+		res.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	res.WriteHeader(http.StatusBadRequest)
+	url, err := h.findURL(strings.Split(u.Path, "/"))
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	res.Header().Set("Content-Type", "text/plain")
+	res.Header().Set("Content-Length", strconv.Itoa(len(url)))
+	res.Header().Set("Location", url)
+
+	res.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (h *Handler) findURL(params []string) (string, error) {
+	for _, param := range params {
+		url, err := h.storage.Get(param)
+		if err != nil {
+			continue
+		}
+
+		return url, nil
+	}
+
+	return "", storage.ErrStorageValueNotFound
 }

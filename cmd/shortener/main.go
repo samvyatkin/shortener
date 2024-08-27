@@ -58,6 +58,11 @@ func run() {
 	utils.Logger.Infow("Running server", "addr", c.ShortenerAddr())
 	utils.Logger.Fatalw(
 		"Can't run server",
-		http.ListenAndServe(c.ServerAddr(), middleware.WithLogging(utils.Logger)(r)),
+		http.ListenAndServe(
+			c.ServerAddr(),
+			middleware.WithLogging(utils.Logger)(
+				middleware.WithCompress()(r),
+			),
+		),
 	)
 }

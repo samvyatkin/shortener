@@ -7,20 +7,24 @@ import (
 	"net/http"
 	"shortener/internal/app/config"
 	"shortener/internal/app/models"
+	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
 )
 
 type Handler struct {
 	uuidGenerator *utils.UUIDGenerator
+	storage       storage.Storage
 	config        config.Configuration
 }
 
 func New(
 	uuidGenerator *utils.UUIDGenerator,
+	storage storage.Storage,
 	config config.Configuration,
 ) *Handler {
 	return &Handler{
 		uuidGenerator: uuidGenerator,
+		storage:       storage,
 		config:        config,
 	}
 }
@@ -50,6 +54,8 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	h.storage.Set(UUID, bodyData.URL)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

@@ -44,6 +44,7 @@ func run() {
 	searchHandler := search.New(inMemoryStorage)
 	shortenHandler := shorten.New(
 		&utils.UUIDGenerator{},
+		inMemoryStorage,
 		c,
 	)
 

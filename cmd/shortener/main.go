@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"log"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"net/http"
 	"shortener/internal/app/config"
 	createRoute "shortener/internal/app/handlers/create"
 	"shortener/internal/app/handlers/search"
+	"shortener/internal/app/middleware"
 	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
 	"time"
@@ -18,16 +18,18 @@ func main() {
 }
 
 func run() {
+	defer utils.Logger.Sync()
+
 	// Configuration
 	c := config.NewConfig()
 	r := chi.NewRouter()
 
 	// Middleware
-	r.Use(middleware.Logger)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RequestID)
-	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(chiMiddleware.Logger)
+	r.Use(chiMiddleware.RealIP)
+	r.Use(chiMiddleware.Recoverer)
+	r.Use(chiMiddleware.RequestID)
+	r.Use(chiMiddleware.Timeout(60 * time.Second))
 
 	// Services
 	inMemoryStorage := storage.NewInMemoryStorage()
@@ -46,5 +48,9 @@ func run() {
 		r.Get("/{id}", searchHandler.Handle)
 	})
 
-	log.Fatal(http.ListenAndServe(c.ServerAddr(), r))
+	utils.Logger.Infow("Running server", "addr", c.ShortenerAddr())
+	utils.Logger.Fatalw(
+		"Can't run server",
+		http.ListenAndServe(c.ServerAddr(), middleware.WithLogging(utils.Logger)(r)),
+	)
 }

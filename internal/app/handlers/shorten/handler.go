@@ -12,20 +12,23 @@ import (
 )
 
 type Handler struct {
-	uuidGenerator *utils.UUIDGenerator
-	storage       storage.Storage
-	config        config.Configuration
+	uuidGenerator   *utils.UUIDGenerator
+	inMemoryStorage storage.Storage
+	fileStorage     storage.Storage
+	config          config.Configuration
 }
 
 func New(
 	uuidGenerator *utils.UUIDGenerator,
-	storage storage.Storage,
+	inMemoryStorage storage.Storage,
+	fileStorage storage.Storage,
 	config config.Configuration,
 ) *Handler {
 	return &Handler{
-		uuidGenerator: uuidGenerator,
-		storage:       storage,
-		config:        config,
+		uuidGenerator:   uuidGenerator,
+		inMemoryStorage: inMemoryStorage,
+		fileStorage:     fileStorage,
+		config:          config,
 	}
 }
 
@@ -53,9 +56,26 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	respBody, err := json.Marshal(respData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	h.storage.Set(UUID, bodyData.URL)
+	d := models.ShortenData{
+		ID:          UUID,
+		ShortURL:    UUID,
+		OriginalURL: bodyData.URL,
+	}
+
+	err = h.inMemoryStorage.Set(d)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = h.fileStorage.Set(d)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"shortener/internal/app/handlers/create/mocks"
+	"shortener/internal/app/models"
 	"shortener/internal/app/storage"
 	"strings"
 	"testing"
@@ -39,8 +40,12 @@ func TestHandle(t *testing.T) {
 			method:  http.MethodGet,
 			request: fmt.Sprintf("%s/%s", host, UUID),
 			storage: mocks.NewInMemoryStorageMock(
-				map[string]string{
-					UUID: URL,
+				map[string]models.ShortenData{
+					UUID: {
+						ID:          UUID,
+						ShortURL:    UUID,
+						OriginalURL: URL,
+					},
 				},
 			),
 			want: want{

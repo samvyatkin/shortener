@@ -39,12 +39,12 @@ func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
 
 func (h *Handler) findURL(params []string) (string, error) {
 	for _, param := range params {
-		url, err := h.storage.Get(param)
+		d, err := h.storage.Get(param)
 		if err != nil {
 			continue
 		}
 
-		return url, nil
+		return d.OriginalURL, nil
 	}
 
 	return "", storage.ErrStorageValueNotFound

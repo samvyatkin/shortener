@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"shortener/internal/app/config"
 	"shortener/internal/app/handlers/create/mocks"
+	"shortener/internal/app/models"
 	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
 	"strings"
@@ -23,6 +24,7 @@ const (
 
 func TestHandle(t *testing.T) {
 	addr := fmt.Sprintf("%s:8080", host)
+	path := "test.txt"
 
 	type want struct {
 		code     int
@@ -31,23 +33,25 @@ func TestHandle(t *testing.T) {
 	}
 
 	tests := []struct {
-		name          string
-		method        string
-		request       string
-		body          string
-		uuidGenerator utils.IdentifierGenerator
-		storage       storage.Storage
-		config        config.Configuration
-		want          want
+		name            string
+		method          string
+		request         string
+		body            string
+		uuidGenerator   utils.IdentifierGenerator
+		inMemoryStorage storage.Storage
+		fileStorage     storage.Storage
+		config          config.Configuration
+		want            want
 	}{
 		{
-			name:          "Create shorten URL (Success)",
-			method:        http.MethodPost,
-			request:       "/",
-			body:          URL,
-			uuidGenerator: mocks.NewUUIDGeneratorMock(UUID),
-			storage:       mocks.NewInMemoryStorageMock(map[string]string{}),
-			config:        mocks.NewConfigMock(addr, addr),
+			name:            "Create shorten URL (Success)",
+			method:          http.MethodPost,
+			request:         "/",
+			body:            URL,
+			uuidGenerator:   mocks.NewUUIDGeneratorMock(UUID),
+			inMemoryStorage: mocks.NewInMemoryStorageMock(map[string]models.ShortenData{}),
+			fileStorage:     mocks.NewInMemoryStorageMock(map[string]models.ShortenData{}),
+			config:          mocks.NewConfigMock(addr, addr, path),
 			want: want{
 				code:     http.StatusCreated,
 				response: fmt.Sprintf("%s:8080/%s", host, UUID),
@@ -65,7 +69,7 @@ func TestHandle(t *testing.T) {
 			req := httptest.NewRequest(tt.method, tt.request, body)
 			rec := httptest.NewRecorder()
 
-			h := New(tt.uuidGenerator, tt.storage, tt.config)
+			h := New(tt.uuidGenerator, tt.inMemoryStorage, tt.fileStorage, tt.config)
 			h.Handle(rec, req)
 
 			res := rec.Result()

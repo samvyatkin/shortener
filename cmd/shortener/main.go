@@ -84,7 +84,7 @@ func run() {
 }
 
 func Load(path string) ([]models.ShortenData, error) {
-	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
 	}

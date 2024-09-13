@@ -10,14 +10,9 @@ type InMemoryStorage struct {
 	mutex sync.RWMutex
 }
 
-func NewInMemoryStorage(source []models.ShortenData) *InMemoryStorage {
-	cache := make(map[string]models.ShortenData)
-	for _, data := range source {
-		cache[data.ID] = data
-	}
-
+func NewInMemoryStorage() *InMemoryStorage {
 	return &InMemoryStorage{
-		cache: cache,
+		cache: make(map[string]models.ShortenData),
 	}
 }
 

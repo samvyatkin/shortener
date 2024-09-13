@@ -12,23 +12,20 @@ import (
 )
 
 type Handler struct {
-	uuidGenerator   utils.IdentifierGenerator
-	inMemoryStorage storage.Storage
-	fileStorage     storage.Storage
-	config          config.Configuration
+	uuidGenerator utils.IdentifierGenerator
+	storage       storage.Storage
+	config        config.Configuration
 }
 
 func New(
 	uuidGenerator utils.IdentifierGenerator,
-	inMemoryStorage storage.Storage,
-	fileStorage storage.Storage,
+	storage storage.Storage,
 	config config.Configuration,
 ) *Handler {
 	return &Handler{
-		uuidGenerator:   uuidGenerator,
-		inMemoryStorage: inMemoryStorage,
-		fileStorage:     fileStorage,
-		config:          config,
+		uuidGenerator: uuidGenerator,
+		storage:       storage,
+		config:        config,
 	}
 }
 
@@ -50,13 +47,7 @@ func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
 		OriginalURL: strings.TrimSpace(string(body)),
 	}
 
-	err = h.inMemoryStorage.Set(d)
-	if err != nil {
-		http.Error(res, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = h.fileStorage.Set(d)
+	err = h.storage.Set(d)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return

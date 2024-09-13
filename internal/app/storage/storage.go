@@ -6,6 +6,8 @@ import (
 )
 
 var (
+	ErrStorageFilePathEmpty = errors.New("storage file path is empty")
+	ErrStorageFileNotExists = errors.New("storage file does not exist")
 	ErrStorageValueNotFound = errors.New("stored value not found")
 )
 

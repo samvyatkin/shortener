@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bufio"
 	"encoding/json"
 	"os"
 	"shortener/internal/app/models"
@@ -13,6 +14,10 @@ type FileStorage struct {
 }
 
 func NewFileStorage(path string) (*FileStorage, error) {
+	if path == "" {
+		return nil, ErrStorageFilePathEmpty
+	}
+
 	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return nil, err
@@ -47,5 +52,35 @@ func (fs *FileStorage) Set(data models.ShortenData) error {
 }
 
 func (fs *FileStorage) Get(ID string) (models.ShortenData, error) {
-	return models.ShortenData{}, nil
+	if fs.file == nil {
+		return models.ShortenData{}, ErrStorageFileNotExists
+	}
+
+	var d *models.ShortenData
+	scanner := bufio.NewScanner(fs.file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		shortenData := models.ShortenData{}
+
+		err := json.Unmarshal([]byte(line), &shortenData)
+		if err != nil {
+			return models.ShortenData{}, err
+		}
+
+		if shortenData.ID == ID {
+			d = &shortenData
+			break
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return models.ShortenData{}, err
+	}
+
+	if d == nil {
+		return models.ShortenData{}, ErrStorageValueNotFound
+	}
+
+	return *d, nil
 }

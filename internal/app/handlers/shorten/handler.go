@@ -53,9 +53,20 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	respBody, err := json.Marshal(respData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	h.storage.Set(UUID, bodyData.URL)
+	d := models.ShortenData{
+		ID:          UUID,
+		ShortURL:    UUID,
+		OriginalURL: bodyData.URL,
+	}
+
+	err = h.storage.Set(d)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

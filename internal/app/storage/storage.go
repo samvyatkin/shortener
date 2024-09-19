@@ -1,12 +1,17 @@
 package storage
 
-import "errors"
+import (
+	"errors"
+	"shortener/internal/app/models"
+)
 
 var (
-	ErrStorageValueNotFound = errors.New("storage value not found")
+	ErrStorageFilePathEmpty = errors.New("storage file path is empty")
+	ErrStorageFileNotExists = errors.New("storage file does not exist")
+	ErrStorageValueNotFound = errors.New("stored value not found")
 )
 
 type Storage interface {
-	Set(key string, value string)
-	Get(key string) (string, error)
+	Set(data models.ShortenData) error
+	Get(ID string) (models.ShortenData, error)
 }

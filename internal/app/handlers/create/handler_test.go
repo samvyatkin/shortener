@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"shortener/internal/app/config"
 	"shortener/internal/app/handlers/create/mocks"
+	"shortener/internal/app/models"
 	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
 	"strings"
@@ -23,6 +24,7 @@ const (
 
 func TestHandle(t *testing.T) {
 	addr := fmt.Sprintf("%s:8080", host)
+	path := "test.txt"
 
 	type want struct {
 		code     int
@@ -46,8 +48,8 @@ func TestHandle(t *testing.T) {
 			request:       "/",
 			body:          URL,
 			uuidGenerator: mocks.NewUUIDGeneratorMock(UUID),
-			storage:       mocks.NewInMemoryStorageMock(map[string]string{}),
-			config:        mocks.NewConfigMock(addr, addr),
+			storage:       mocks.NewInMemoryStorageMock(map[string]models.ShortenData{}),
+			config:        mocks.NewConfigMock(addr, addr, path),
 			want: want{
 				code:     http.StatusCreated,
 				response: fmt.Sprintf("%s:8080/%s", host, UUID),

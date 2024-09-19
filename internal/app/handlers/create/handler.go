@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"shortener/internal/app/config"
+	"shortener/internal/app/models"
 	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
 	"strings"
@@ -31,7 +32,7 @@ func New(
 func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
+		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -40,10 +41,17 @@ func (h *Handler) Handle(res http.ResponseWriter, req *http.Request) {
 	UUID := h.uuidGenerator.Generate()
 	shortURL := fmt.Sprintf("%s/%s", h.config.ShortenerAddr(), UUID)
 
-	url := string(body)
-	url = strings.TrimSpace(url)
+	d := models.ShortenData{
+		ID:          UUID,
+		ShortURL:    UUID,
+		OriginalURL: strings.TrimSpace(string(body)),
+	}
 
-	h.storage.Set(UUID, url)
+	err = h.storage.Set(d)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	res.Header().Set("Content-Type", "text/plain")
 	res.WriteHeader(http.StatusCreated)

@@ -33,18 +33,21 @@ func run() {
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
 
 	// Services
-	inMemoryStorage := storage.NewInMemoryStorage()
+	s, err := URLsStorage(c.FileStoragePath())
+	if err != nil {
+		utils.Logger.Fatalf("failed to init storage %v", err)
+	}
 
 	// Handlers
 	createHandler := createRoute.New(
 		&utils.UUIDGenerator{},
-		inMemoryStorage,
+		s,
 		c,
 	)
-	searchHandler := search.New(inMemoryStorage)
+	searchHandler := search.New(s)
 	shortenHandler := shorten.New(
 		&utils.UUIDGenerator{},
-		inMemoryStorage,
+		s,
 		c,
 	)
 
@@ -65,4 +68,13 @@ func run() {
 			),
 		),
 	)
+}
+
+func URLsStorage(path string) (storage.Storage, error) {
+	fileStorage, err := storage.NewFileStorage(path)
+	if err != nil {
+		return storage.NewInMemoryStorage(), nil
+	}
+
+	return fileStorage, nil
 }

@@ -7,6 +7,7 @@ import (
 	"shortener/internal/app/config"
 	createRoute "shortener/internal/app/handlers/create"
 	"shortener/internal/app/handlers/search"
+	"shortener/internal/app/handlers/shorten"
 	"shortener/internal/app/middleware"
 	"shortener/internal/app/storage"
 	"shortener/internal/app/utils"
@@ -41,10 +42,16 @@ func run() {
 		c,
 	)
 	searchHandler := search.New(inMemoryStorage)
+	shortenHandler := shorten.New(
+		&utils.UUIDGenerator{},
+		inMemoryStorage,
+		c,
+	)
 
 	// Routes
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", createHandler.Handle)
+		r.Post("/api/shorten", shortenHandler.Handle)
 		r.Get("/{id}", searchHandler.Handle)
 	})
 

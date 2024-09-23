@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"shortener/internal/app/config"
 	createRoute "shortener/internal/app/handlers/create"
+	"shortener/internal/app/handlers/ping"
 	"shortener/internal/app/handlers/search"
 	"shortener/internal/app/handlers/shorten"
 	"shortener/internal/app/middleware"
@@ -33,7 +34,7 @@ func run() {
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
 
 	// Services
-	s, err := URLsStorage(c.FileStoragePath())
+	s, err := URLsStorage(c)
 	if err != nil {
 		utils.Logger.Fatalf("failed to init storage %v", err)
 	}
@@ -50,12 +51,17 @@ func run() {
 		s,
 		c,
 	)
+	pingHandler := ping.New(
+		s,
+		c,
+	)
 
 	// Routes
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", createHandler.Handle)
 		r.Post("/api/shorten", shortenHandler.Handle)
 		r.Get("/{id}", searchHandler.Handle)
+		r.Get("/ping", pingHandler.Handle)
 	})
 
 	utils.Logger.Infow("Running server", "addr", c.ShortenerAddr())
@@ -70,11 +76,16 @@ func run() {
 	)
 }
 
-func URLsStorage(path string) (storage.Storage, error) {
-	fileStorage, err := storage.NewFileStorage(path)
+func URLsStorage(config *config.Config) (storage.Storage, error) {
+	dbStorage, err := storage.NewDBStorage(config.DBAddr())
 	if err != nil {
-		return storage.NewInMemoryStorage(), nil
+		fileStorage, err := storage.NewFileStorage(config.FileStoragePath())
+		if err != nil {
+			return storage.NewInMemoryStorage(), nil
+		}
+
+		return fileStorage, nil
 	}
 
-	return fileStorage, nil
+	return dbStorage, nil
 }

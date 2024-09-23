@@ -49,7 +49,7 @@ func TestHandle(t *testing.T) {
 			body:          URL,
 			uuidGenerator: mocks.NewUUIDGeneratorMock(UUID),
 			storage:       mocks.NewInMemoryStorageMock(map[string]models.ShortenData{}),
-			config:        mocks.NewConfigMock(addr, addr, path),
+			config:        mocks.NewConfigMock(addr, addr, addr, path),
 			want: want{
 				code:     http.StatusCreated,
 				response: fmt.Sprintf("%s:8080/%s", host, UUID),

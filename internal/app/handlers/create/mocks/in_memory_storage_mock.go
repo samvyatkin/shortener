@@ -15,6 +15,14 @@ func NewInMemoryStorageMock(data map[string]models.ShortenData) *InMemoryStorage
 	}
 }
 
+func (s *InMemoryStorageMock) Connect() error {
+	return nil
+}
+
+func (s *InMemoryStorageMock) Close() error {
+	return nil
+}
+
 func (s *InMemoryStorageMock) Set(data models.ShortenData) error {
 	s.cache[data.ID] = data
 	return nil

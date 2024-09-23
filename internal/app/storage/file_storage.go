@@ -26,6 +26,14 @@ func NewFileStorage(path string) (*FileStorage, error) {
 	}, nil
 }
 
+func (fs *FileStorage) Connect() error {
+	return nil
+}
+
+func (fs *FileStorage) Close() error {
+	return nil
+}
+
 func (fs *FileStorage) Set(data models.ShortenData) error {
 	fs.mutex.Lock()
 	defer fs.mutex.Unlock()

@@ -16,6 +16,14 @@ func NewInMemoryStorage() *InMemoryStorage {
 	}
 }
 
+func (s *InMemoryStorage) Connect() error {
+	return nil
+}
+
+func (s *InMemoryStorage) Close() error {
+	return nil
+}
+
 func (s *InMemoryStorage) Set(data models.ShortenData) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
